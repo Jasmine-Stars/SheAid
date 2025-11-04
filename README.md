@@ -1,2 +1,3 @@
-# supreme-dollop
-Building a transparent and privacy-preserving donation chain for women. SheAid combines Web3 verifiability with NGO trust to ensure funds are traceable, fair, and truly reach those in need.
+# SheAid 
+SheAid aims to rebuild public trust in charity.
+By combining Web3 verifiability with the humanity of social organizations, SheAid creates a transparent, trustless donation chain where every transaction is traceable, procurement is fair, and the privacy of female and minor recipients is protected.
