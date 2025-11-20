@@ -24,9 +24,9 @@ const Header = () => {
             <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">
               核心特性
             </a>
-            <a href="#how-it-works" className="text-foreground hover:text-primary transition-colors font-medium">
-              如何运作
-            </a>
+            <Link to="/apply" className="text-foreground hover:text-primary transition-colors font-medium">
+              申请救助
+            </Link>
             <a href="#impact" className="text-foreground hover:text-primary transition-colors font-medium">
               社会影响
             </a>
@@ -59,9 +59,9 @@ const Header = () => {
             <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">
               核心特性
             </a>
-            <a href="#how-it-works" className="text-foreground hover:text-primary transition-colors font-medium">
-              如何运作
-            </a>
+            <Link to="/apply" className="text-foreground hover:text-primary transition-colors font-medium">
+              申请救助
+            </Link>
             <a href="#impact" className="text-foreground hover:text-primary transition-colors font-medium">
               社会影响
             </a>
