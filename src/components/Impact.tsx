@@ -1,84 +1,128 @@
-import { TrendingUp, Users, DollarSign, Award } from "lucide-react";
-import { Card } from "@/components/ui/card";
-
-const stats = [
-  {
-    icon: Users,
-    value: "10,000+",
-    label: "受助女性",
-    trend: "+25%",
-    color: "from-primary to-primary/70",
-  },
-  {
-    icon: DollarSign,
-    value: "¥500万",
-    label: "透明捐款",
-    trend: "+40%",
-    color: "from-secondary to-secondary/70",
-  },
-  {
-    icon: Award,
-    value: "150+",
-    label: "合作商户",
-    trend: "+15%",
-    color: "from-primary to-primary/70",
-  },
-  {
-    icon: TrendingUp,
-    value: "99.9%",
-    label: "资金利用率",
-    trend: "行业领先",
-    color: "from-secondary to-secondary/70",
-  },
-];
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Heart, TrendingUp, Award } from "lucide-react";
+import ImpactMap from "./ImpactMap";
+import RegionalIssues from "./RegionalIssues";
 
 const Impact = () => {
   return (
-    <section className="py-24 bg-gradient-hero">
+    <section id="impact" className="py-20 bg-background">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl lg:text-5xl font-bold">
-            我们的<span className="bg-gradient-primary bg-clip-text text-transparent">影响力</span>
+        {/* Global Impact Map */}
+        <div className="mb-16 animate-fade-in">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              全球影响力地图
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              实时追踪我们的救助足迹，见证每一份爱心的力量
+            </p>
+          </div>
+          <ImpactMap />
+        </div>
+
+        {/* Regional Issues Analysis */}
+        <div className="mb-16 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+          <RegionalIssues />
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="text-center mb-12 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            我们的社会影响
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            每一个数字背后都是一个被改变的生命
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            通过区块链技术，我们正在改变成千上万女性的生活
           </p>
         </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card 
-                key={index}
-                className="p-8 text-center space-y-4 hover:shadow-soft transition-all duration-300 border-2 hover:scale-105 bg-card"
-              >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center mx-auto shadow-card`}>
-                  <Icon className="w-8 h-8 text-white" />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm font-medium text-foreground">
-                    {stat.label}
-                  </div>
-                  <div className="inline-flex items-center gap-1 text-xs text-secondary font-semibold bg-secondary/10 px-3 py-1 rounded-full">
-                    <TrendingUp className="w-3 h-3" />
-                    {stat.trend}
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-4xl font-bold text-primary">856</CardTitle>
+              <CardDescription>累计受助人数</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <Heart className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-4xl font-bold text-primary">1,234</CardTitle>
+              <CardDescription>爱心捐助人数</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-4xl font-bold text-primary">127.5</CardTitle>
+              <CardDescription>ETH 捐款总额</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <Award className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-4xl font-bold text-primary">94%</CardTitle>
+              <CardDescription>受助者满意度</CardDescription>
+            </CardHeader>
+          </Card>
         </div>
-        
-        <div className="mt-16 p-8 bg-gradient-primary rounded-3xl text-white text-center space-y-4">
-          <h3 className="text-3xl font-bold">加入我们，一起创造改变</h3>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto">
-            你的每一次捐助，都将通过区块链技术被精准追踪，确保安全透明地到达需要帮助的女性手中
-          </p>
+
+        {/* Success Stories */}
+        <div className="animate-fade-in" style={{ animationDelay: "0.5s" }}>
+          <h3 className="text-2xl font-bold text-center mb-8">成功案例</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4">
+                  <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xl mb-3">
+                    李
+                  </div>
+                  <h4 className="font-semibold mb-2">李女士 - 北京</h4>
+                  <p className="text-sm text-muted-foreground">
+                    通过我们的职业培训项目，李女士成功转型为独立设计师，现在月收入稳定，生活得到了极大改善。
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4">
+                  <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xl mb-3">
+                    王
+                  </div>
+                  <h4 className="font-semibold mb-2">王女士 - 上海</h4>
+                  <p className="text-sm text-muted-foreground">
+                    在我们的帮助下，王女士成功脱离家暴环境，获得法律援助，现在和孩子过上了安全幸福的生活。
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-4">
+                  <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xl mb-3">
+                    张
+                  </div>
+                  <h4 className="font-semibold mb-2">张女士 - 成都</h4>
+                  <p className="text-sm text-muted-foreground">
+                    通过创业孵化项目的支持，张女士成功创办了自己的公司，不仅实现了经济独立，还帮助了更多女性就业。
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>
