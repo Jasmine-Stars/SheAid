@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Heart, Menu } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,12 +10,12 @@ const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <Heart className="w-6 h-6 text-primary fill-primary" />
             <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               SheAid
             </span>
-          </div>
+          </Link>
           
           <nav className="hidden md:flex items-center gap-8">
             <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">
@@ -35,9 +36,11 @@ const Header = () => {
             <Button variant="outline" className="hidden md:inline-flex">
               登录
             </Button>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-              立即捐助
-            </Button>
+            <Link to="/donate">
+              <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+                立即捐助
+              </Button>
+            </Link>
             
             <button 
               className="md:hidden"
