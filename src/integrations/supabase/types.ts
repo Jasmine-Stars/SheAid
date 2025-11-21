@@ -287,6 +287,13 @@ export type Database = {
             referencedRelation: "organizers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "projects_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "public_organizers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -320,7 +327,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_organizers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string | null
+          organization_name: string | null
+          organization_type: string | null
+          status: Database["public"]["Enums"]["organizer_status"] | null
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          organization_name?: string | null
+          organization_type?: string | null
+          status?: Database["public"]["Enums"]["organizer_status"] | null
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          organization_name?: string | null
+          organization_type?: string | null
+          status?: Database["public"]["Enums"]["organizer_status"] | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
