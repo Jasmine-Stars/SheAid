@@ -50,58 +50,44 @@ const Header = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">
-              关于我们
-            </a>
-            <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">
-              核心特性
-            </a>
             <Link to="/apply" className="text-foreground hover:text-primary transition-colors font-medium">
               申请救助
             </Link>
-            <Link to="/become-organizer" className="text-foreground hover:text-primary transition-colors font-medium">
-              成为发起人
+            <Link to="/donate" className="text-foreground hover:text-primary transition-colors font-medium">
+              捐助善款
             </Link>
-            <a href="#impact" className="text-foreground hover:text-primary transition-colors font-medium">
-              社会影响
-            </a>
+            <Link to="/ngo" className="text-foreground hover:text-primary transition-colors font-medium">
+              NGO机构
+            </Link>
+            <Link to="/merchant" className="text-foreground hover:text-primary transition-colors font-medium">
+              商户物资
+            </Link>
+            <Link to="/auditor" className="text-foreground hover:text-primary transition-colors font-medium">
+              审计相关
+            </Link>
           </nav>
           
           <div className="flex items-center gap-4">
             {user ? (
-              <>
-                <Link to="/donate">
-                  <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-                    立即捐助
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="hidden md:inline-flex">
+                    <User className="w-4 h-4" />
                   </Button>
-                </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="hidden md:inline-flex">
-                      <User className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      退出登录
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    退出登录
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="outline" className="hidden md:inline-flex">
-                    登录
-                  </Button>
-                </Link>
-                <Link to="/donate">
-                  <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
-                    立即捐助
-                  </Button>
-                </Link>
-              </>
+              <Link to="/auth">
+                <Button variant="outline" className="hidden md:inline-flex">
+                  登录 / 注册
+                </Button>
+              </Link>
             )}
             
             <button 
@@ -115,21 +101,21 @@ const Header = () => {
         
         {isMenuOpen && (
           <nav className="md:hidden pt-4 pb-2 flex flex-col gap-4">
-            <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">
-              关于我们
-            </a>
-            <a href="#features" className="text-foreground hover:text-primary transition-colors font-medium">
-              核心特性
-            </a>
             <Link to="/apply" className="text-foreground hover:text-primary transition-colors font-medium">
               申请救助
             </Link>
-            <Link to="/become-organizer" className="text-foreground hover:text-primary transition-colors font-medium">
-              成为发起人
+            <Link to="/donate" className="text-foreground hover:text-primary transition-colors font-medium">
+              捐助善款
             </Link>
-            <a href="#impact" className="text-foreground hover:text-primary transition-colors font-medium">
-              社会影响
-            </a>
+            <Link to="/ngo" className="text-foreground hover:text-primary transition-colors font-medium">
+              NGO机构
+            </Link>
+            <Link to="/merchant" className="text-foreground hover:text-primary transition-colors font-medium">
+              商户物资
+            </Link>
+            <Link to="/auditor" className="text-foreground hover:text-primary transition-colors font-medium">
+              审计相关
+            </Link>
           </nav>
         )}
       </div>

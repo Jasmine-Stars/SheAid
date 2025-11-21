@@ -8,6 +8,9 @@ import Donate from "./pages/Donate";
 import Apply from "./pages/Apply";
 import Auth from "./pages/Auth";
 import BecomeOrganizer from "./pages/BecomeOrganizer";
+import NGO from "./pages/NGO";
+import Merchant from "./pages/Merchant";
+import Auditor from "./pages/Auditor";
 import { AdminLayout } from "./components/AdminLayout";
 import ReviewOrganizers from "./pages/admin/ReviewOrganizers";
 import NotFound from "./pages/NotFound";
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/donate" element={<Donate />} />
           <Route path="/apply" element={<Apply />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/ngo" element={<NGO />} />
+          <Route path="/merchant" element={<Merchant />} />
+          <Route path="/auditor" element={<Auditor />} />
           <Route path="/become-organizer" element={<BecomeOrganizer />} />
           
           {/* Admin Routes */}

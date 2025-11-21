@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Heart, TrendingUp, Award } from "lucide-react";
-import ImpactMap from "./ImpactMap";
+import EnhancedImpactMap from "./EnhancedImpactMap";
 import RegionalIssues from "./RegionalIssues";
 
 const Impact = () => {
@@ -17,7 +17,7 @@ const Impact = () => {
               实时追踪我们的救助足迹，见证每一份爱心的力量
             </p>
           </div>
-          <ImpactMap />
+          <EnhancedImpactMap />
         </div>
 
         {/* Regional Issues Analysis */}
