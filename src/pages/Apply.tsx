@@ -85,10 +85,7 @@ const Apply = () => {
   });
 
   const onSubmit = (data: ApplicationFormValues) => {
-    console.log("Application submitted:", { 
-      ...data, 
-      timestamp: new Date().toISOString() 
-    });
+    // Security: Removed PII logging - sensitive data should not be logged to console
     
     toast({
       title: "申请已提交",

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
@@ -26,21 +27,19 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-wrap gap-4">
-              <Link to="/donate"></Link>
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-soft">
-                立即捐助
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              <Link to="/donate">
+                <Button size="lg" className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-soft">
+                  立即捐助
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
               </Link>
 
-
               <Button size="lg" 
-              variant="outline" 
-              className="border-2"
-              onClick={() => window.open('https://github.com/Jasmine-Stars/frontend-genie', '_blank')}>
+                variant="outline" 
+                className="border-2"
+                onClick={() => window.open('https://github.com/Jasmine-Stars/frontend-genie', '_blank')}>
                 了解更多
               </Button>
-
             </div>
             
             <div className="flex gap-8 pt-8 border-t border-border">
