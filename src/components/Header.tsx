@@ -65,6 +65,9 @@ const Header = () => {
             <Link to="/auditor" className="text-foreground hover:text-primary transition-colors font-medium">
               审计相关
             </Link>
+            <Link to="/fund-flow" className="text-foreground hover:text-primary transition-colors font-medium">
+              资金追踪
+            </Link>
           </nav>
           
           <div className="flex items-center gap-4">
@@ -115,6 +118,9 @@ const Header = () => {
             </Link>
             <Link to="/auditor" className="text-foreground hover:text-primary transition-colors font-medium">
               审计相关
+            </Link>
+            <Link to="/fund-flow" className="text-foreground hover:text-primary transition-colors font-medium">
+              资金追踪
             </Link>
           </nav>
         )}

@@ -131,6 +131,73 @@ export type Database = {
           },
         ]
       }
+      fund_allocations: {
+        Row: {
+          allocated_by: string
+          allocation_type: string
+          amount: number
+          application_id: string
+          created_at: string
+          description: string
+          donation_id: string | null
+          id: string
+          project_id: string
+          proof_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_by: string
+          allocation_type: string
+          amount: number
+          application_id: string
+          created_at?: string
+          description: string
+          donation_id?: string | null
+          id?: string
+          project_id: string
+          proof_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_by?: string
+          allocation_type?: string
+          amount?: number
+          application_id?: string
+          created_at?: string
+          description?: string
+          donation_id?: string | null
+          id?: string
+          project_id?: string
+          proof_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_allocations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fund_allocations_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fund_allocations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizers: {
         Row: {
           contact_email: string
