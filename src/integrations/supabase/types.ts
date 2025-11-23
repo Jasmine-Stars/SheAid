@@ -83,6 +83,78 @@ export type Database = {
           },
         ]
       }
+      auditors: {
+        Row: {
+          certification_number: string | null
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          description: string
+          expertise_areas: string[]
+          full_name: string
+          id: string
+          organization_name: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["organizer_status"]
+          updated_at: string
+          user_id: string
+          verification_documents: Json | null
+        }
+        Insert: {
+          certification_number?: string | null
+          contact_email: string
+          contact_phone: string
+          created_at?: string
+          description: string
+          expertise_areas: string[]
+          full_name: string
+          id?: string
+          organization_name?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["organizer_status"]
+          updated_at?: string
+          user_id: string
+          verification_documents?: Json | null
+        }
+        Update: {
+          certification_number?: string | null
+          contact_email?: string
+          contact_phone?: string
+          created_at?: string
+          description?: string
+          expertise_areas?: string[]
+          full_name?: string
+          id?: string
+          organization_name?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["organizer_status"]
+          updated_at?: string
+          user_id?: string
+          verification_documents?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auditors_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auditors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           amount: number
