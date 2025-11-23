@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, ArrowLeft, User, DollarSign, Building, Package, Search } from "lucide-react";
+import { Heart, ArrowLeft, User, DollarSign, Building, Package, Search, Wallet } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +54,40 @@ const Auth = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleMetaMaskConnect = async () => {
+    if (!window.ethereum) {
+      toast({
+        title: "未检测到MetaMask",
+        description: "请安装MetaMask钱包插件",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+      
+      if (accounts.length > 0) {
+        toast({
+          title: "连接成功",
+          description: `已连接钱包 ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
+        });
+        // TODO: Implement Web3 authentication flow
+      }
+    } catch (error: any) {
+      toast({
+        title: "连接失败",
+        description: error.message || "无法连接MetaMask",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSignIn = async (data: AuthFormValues) => {
     setIsLoading(true);
@@ -203,6 +237,26 @@ const Auth = () => {
                     disabled={isLoading}
                   >
                     {isLoading ? "登录中..." : "登录"}
+                  </Button>
+                  
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-background text-muted-foreground">或</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleMetaMaskConnect}
+                    disabled={isLoading}
+                  >
+                    <Wallet className="w-4 h-4 mr-2" />
+                    使用 MetaMask 连接
                   </Button>
                 </form>
               </Form>
