@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { ethers } from "ethers";
 import { useWeb3 } from "./useWeb3";
 import { CONTRACT_ADDRESSES } from "@/contracts/addresses";

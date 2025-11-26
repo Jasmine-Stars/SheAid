@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import React, { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { ethers } from "ethers";
 import { NETWORK_CONFIG } from "@/contracts/addresses";
 import { toast } from "sonner";
