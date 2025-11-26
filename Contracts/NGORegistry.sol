@@ -41,7 +41,7 @@ contract NGORegistry {
     modifier onlyPlatformAdmin() {
         require(
             roles.hasRole(roles.PLATFORM_ADMIN_ROLE(), msg.sender),
-            "Not platform admin"
+            "Not platform admin:NGO"
         );
         _;
     }
@@ -83,7 +83,7 @@ contract NGORegistry {
         info.approved = true;
 
         // 给这个地址授予 NGO_ROLE
-        roles.grantNGORole(ngoAddr);
+        roles.grantNGORoleByRegistry(ngoAddr);
 
         emit NGOApproved(ngoAddr, block.timestamp);
     }

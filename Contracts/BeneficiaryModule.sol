@@ -64,7 +64,7 @@ contract BeneficiaryModule {
         _;
     }
 
-    modifier onlyProjectVaultManager() {
+    modifier onlyProjectVaultManager() {//必须是该合约地址调用
         require(msg.sender == projectVaultManager, "Not ProjectVaultManager");
         _;
     }
@@ -87,7 +87,7 @@ contract BeneficiaryModule {
 
     // ========= 发积分（仅项目资金池调用） =========
 
-    function grantCharityToken(
+    function grantCharityToken(//直接给受助人发送积分
         address beneficiary,
         uint256 amount,
         uint256 projectId
@@ -164,7 +164,7 @@ contract BeneficiaryModule {
     ) internal {
         BeneficiaryStats storage s = stats[beneficiary];
 
-        // 冷却期检查
+        // 冷却期检查：防止受益人在平台上花掉/兑现过多善款
         if (cooldownSeconds > 0 && s.lastSpendTimestamp != 0) {
             require(
                 block.timestamp >= s.lastSpendTimestamp + cooldownSeconds,
@@ -178,7 +178,7 @@ contract BeneficiaryModule {
             s.lastResetDay = currentDay;
             s.dailySpent = 0;
         }
-
+        // 检查每日限额
         if (dailyLimit > 0) {
             uint256 newDaily = s.dailySpent + amount;
             require(newDaily <= dailyLimit, "daily limit exceeded");
@@ -192,7 +192,7 @@ contract BeneficiaryModule {
 
     // ========= 辅助查询（前端用） =========
 
-    function getStats(address beneficiary)
+    function getStats(address beneficiary)//该用户上一次消费的时间戳，今日购物花销大小，间隔消费冷却期
         external
         view
         returns (

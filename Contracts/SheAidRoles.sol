@@ -13,6 +13,30 @@ contract SheAidRoles is AccessControl {
     // 受助人
     bytes32 public constant BENEFICIARY_ROLE = keccak256("BENEFICIARY_ROLE");
 
+    address public ngoRegistry;
+
+    address public  merchantRegistryAddress;
+
+    function setNGORegistry(address _addr) external onlyPlatformAdmin {
+        ngoRegistry = _addr;
+    }
+
+    function setMerchantRegistry(address _addr) external onlyPlatformAdmin {
+        merchantRegistryAddress = _addr;
+    }
+
+    function grantNGORoleByRegistry(address ngo) external {
+        // 必须是该合约地址自己发起调用才可以
+        require(msg.sender == ngoRegistry, "Not NGORegistry");
+        _grantRole(NGO_ROLE, ngo);
+    }
+
+    function grantMerchantRoleByRegistry(address merchant) external {
+        require(msg.sender == merchantRegistryAddress, "Not registry");
+        _grantRole(MERCHANT_ROLE, merchant);
+    }
+
+
     constructor(address superAdmin) {
         require(superAdmin != address(0), "superAdmin is zero");
         // 默认管理员可以管理所有角色

@@ -116,7 +116,7 @@ contract PlatformAdmin {
         string calldata reason
     ) external returns (uint256 reportId) {
         require(targetAddress != address(0), "target is zero");
-
+        // 所有举报编号不论类型依次叠加
         reportId = nextReportId;
         nextReportId += 1;
 

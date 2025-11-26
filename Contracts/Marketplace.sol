@@ -7,11 +7,17 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./SheAidRoles.sol";
 
+interface IMerchantRegistry {
+    function isActiveMerchant(address merchant) external view returns (bool);
+}
+
 contract Marketplace is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     SheAidRoles public roles;
     IERC20 public settlementToken;
+
+    IMerchantRegistry public merchantRegistry; //商户注册合约地址
 
     // 由平台设置的价格类目
     struct PriceCategory {
@@ -45,6 +51,7 @@ contract Marketplace is ReentrancyGuard {
     // --- 事件 ---
 
     event BeneficiaryModuleSet(address indexed module);
+    event MerchantRegistrySet(address indexed _merchantRegistryAddr);
 
     event PriceCategoryUpdated(
         bytes32 indexed categoryId,
@@ -109,6 +116,41 @@ contract Marketplace is ReentrancyGuard {
         _;
     }
 
+    modifier onlyActiveMerchant() {
+        // 1）必须有 MERCHANT_ROLE（从 SheAidRoles 来）
+        require(
+            roles.hasRole(roles.MERCHANT_ROLE(), msg.sender),
+            "Not merchant"
+        );
+
+        // 2）MerchantRegistry 必须配置好
+        require(address(merchantRegistry) != address(0), "MerchantRegistry not set");
+
+        // 3）在商户注册表里是 Active 状态
+        require(
+            merchantRegistry.isActiveMerchant(msg.sender),
+            "merchant not active"
+        );
+        _;
+    }
+
+
+    //管理员尝试去配置
+    function setMerchantRegistry(address _merchantRegistry) external onlyPlatformAdmin {
+        require(_merchantRegistry != address(0), "zero address");
+        merchantRegistry = IMerchantRegistry(_merchantRegistry);
+        emit MerchantRegistrySet(_merchantRegistry);
+    }
+
+    // function _checkActiveMerchant(address merchant) internal view {
+    //     require(address(merchantRegistry) != address(0), "MerchantRegistry not set");
+    //     require(
+    //         merchantRegistry.isActiveMerchant(merchant),
+    //         "merchant not active"
+    //     );
+    // }
+
+
     // ========== 配置关联模块 ==========
 
     function setBeneficiaryModule(address _beneficiaryModule) external onlyPlatformAdmin {
@@ -147,11 +189,11 @@ contract Marketplace is ReentrancyGuard {
         bytes32 categoryId,
         uint256 price,
         string calldata metadata
-    ) external returns (uint256 productId) {
-        require(
-            roles.hasRole(roles.MERCHANT_ROLE(), msg.sender),
-            "Not merchant"
-        );
+    ) external onlyActiveMerchant returns (uint256 productId) {
+        // require(
+        //     roles.hasRole(roles.MERCHANT_ROLE(), msg.sender),
+        //     "Not merchant"
+        // );
         require(categories[categoryId].exists, "category not set");
         require(price > 0, "price is zero");
         require(_priceInRange(categoryId, price), "price out of range");
@@ -181,7 +223,7 @@ contract Marketplace is ReentrancyGuard {
     function updateProductPrice(
         uint256 productId,
         uint256 newPrice
-    ) external {
+    ) external onlyActiveMerchant{//首先确定商户的身份以及是活跃的，然后确定商品是否对应商户
         Product storage p = products[productId];
         require(p.merchant != address(0), "product not exist");
         require(msg.sender == p.merchant, "not product merchant");
@@ -198,7 +240,7 @@ contract Marketplace is ReentrancyGuard {
     function setProductActive(
         uint256 productId,
         bool active
-    ) external {
+    ) external onlyActiveMerchant {
         Product storage p = products[productId];
         require(p.merchant != address(0), "product not exist");
         require(msg.sender == p.merchant, "not product merchant");
@@ -246,11 +288,11 @@ contract Marketplace is ReentrancyGuard {
 
     // ========== 商户提现 ==========
 
-    function merchantWithdraw(uint256 amount) external nonReentrant {
-        require(
-            roles.hasRole(roles.MERCHANT_ROLE(), msg.sender),
-            "Not merchant"
-        );
+    function merchantWithdraw(uint256 amount) external onlyActiveMerchant nonReentrant {
+        // require(
+        //     roles.hasRole(roles.MERCHANT_ROLE(), msg.sender),
+        //     "Not merchant"
+        // );
         require(amount > 0, "amount is zero");
         uint256 balance = merchantBalance[msg.sender];
         require(balance >= amount, "insufficient balance");

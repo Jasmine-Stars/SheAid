@@ -20,11 +20,11 @@ contract ProjectVaultManager is ReentrancyGuard {
     struct Project {
         uint256 id;
         address ngoAddr;
-        address manager;
-        uint256 budget;
-        uint256 deposit;
-        uint256 donatedAmount;
-        uint256 remainingFunds;
+        address manager;//暂时这两个地址都是一样的，后续可以修改成manager可以由NGO进行授权
+        uint256 budget;//预计筹款额度
+        uint256 deposit;//项目押金
+        uint256 donatedAmount;//总共捐了多少钱
+        uint256 remainingFunds;//分配给别人后实际的捐赠池
         ProjectStatus status;
         string title;
         string description;
@@ -118,7 +118,7 @@ contract ProjectVaultManager is ReentrancyGuard {
         p.deposit = deposit;
         p.donatedAmount = 0;
         p.remainingFunds = 0;
-        p.status = ProjectStatus.Active;
+        p.status = ProjectStatus.Active;//身份已经验证过NGO了，所以赋予Active
         p.title = title;
         p.description = description;
         p.categoryTag = categoryTag;
@@ -146,9 +146,9 @@ contract ProjectVaultManager is ReentrancyGuard {
         Project storage p = projects[projectId];
         require(p.status == ProjectStatus.Active, "project not active");
         require(amount > 0, "amount zero");
-
+        //此处的捐赠资金并没有直接在不同的项目合约上（暂时统一所有项目在一个合约中，不分NGO）
         settlementToken.safeTransferFrom(msg.sender, address(this), amount);
-
+        // 捐的钱后续变成代金券发给用户
         p.donatedAmount += amount;
         p.remainingFunds += amount;
 
@@ -169,13 +169,13 @@ contract ProjectVaultManager is ReentrancyGuard {
     ) external nonReentrant {
         Project storage p = projects[projectId];
         require(p.status == ProjectStatus.Active, "project not active");
-        require(msg.sender == p.ngoAddr, "not project NGO");
+        require(msg.sender == p.ngoAddr, "not project NGO");//此处做了捐赠项目的ngo检查
         require(beneficiary != address(0), "beneficiary zero");
         require(amount > 0, "amount zero");
         require(p.remainingFunds >= amount, "insufficient project funds");
 
         p.remainingFunds -= amount;
-
+        //由哪个项目发给了受助人多少钱
         beneficiaryModule.grantCharityToken(beneficiary, amount, projectId);
 
         emit ProjectFundsAllocatedToBeneficiary(
@@ -202,7 +202,7 @@ contract ProjectVaultManager is ReentrancyGuard {
         p.remainingFunds = 0;
         p.deposit = 0;
 
-        // 简化处理：全部退还给 NGO 地址
+        // 简化处理：全部退还给 NGO 地址，暂时认定他们会乖乖进行下一次慈善筹款吧，不然就审计她们~
         if (remaining > 0) {
             settlementToken.safeTransfer(p.ngoAddr, remaining);
         }
