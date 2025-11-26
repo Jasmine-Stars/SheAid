@@ -1,102 +1,149 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  AlertCircle, 
-  CheckCircle2, 
-  Clock,
-  TrendingUp,
-  Heart,
-  DollarSign,
-  ArrowLeft
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
-const applicationSchema = z.object({
-  name: z.string()
-    .trim()
-    .min(2, { message: "姓名至少需要2个字符" })
-    .max(50, { message: "姓名不能超过50个字符" }),
-  age: z.string()
-    .min(1, { message: "请输入年龄" }),
-  phone: z.string()
-    .trim()
-    .regex(/^1[3-9]\d{9}$/, { message: "请输入有效的手机号码" }),
-  email: z.string()
-    .trim()
-    .email({ message: "请输入有效的邮箱地址" })
-    .max(255, { message: "邮箱地址过长" }),
-  address: z.string()
-    .trim()
-    .min(5, { message: "地址至少需要5个字符" })
-    .max(200, { message: "地址不能超过200个字符" }),
-  urgencyLevel: z.string()
-    .min(1, { message: "请选择紧急程度" }),
-  situation: z.string()
-    .trim()
-    .min(20, { message: "请详细描述您的情况，至少20个字符" })
-    .max(2000, { message: "描述不能超过2000个字符" }),
-  requestedAmount: z.string()
-    .min(1, { message: "请输入申请金额" }),
-});
-
-type ApplicationFormValues = z.infer<typeof applicationSchema>;
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Heart, Send, Wallet, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useWeb3 } from "@/hooks/useWeb3";
+import { useContracts } from "@/hooks/useContracts";
+import { ethers } from "ethers";
 
 const Apply = () => {
-  const [showProgress, setShowProgress] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
-
-  const form = useForm<ApplicationFormValues>({
-    resolver: zodResolver(applicationSchema),
-    defaultValues: {
-      name: "",
-      age: "",
-      phone: "",
-      email: "",
-      address: "",
-      urgencyLevel: "",
-      situation: "",
-      requestedAmount: "",
-    },
+  const { account, isConnected, connectWallet } = useWeb3();
+  const contracts = useContracts();
+  const [user, setUser] = useState<any>(null);
+  
+  const [formData, setFormData] = useState({
+    nickname: "",
+    contact_email: "",
+    contact_phone: "",
+    wallet_address: "",
+    situation: "",
+    requested_amount: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 受助人余额和统计
+  const [charityBalance, setCharityBalance] = useState("0");
+  const [stats, setStats] = useState({
+    dailySpent: "0",
+    lastSpendTime: 0,
   });
 
-  const onSubmit = (data: ApplicationFormValues) => {
-    // Security: Removed PII logging - sensitive data should not be logged to console
-    
-    toast({
-      title: "申请已提交",
-      description: "我们将在48小时内审核您的申请",
-    });
+  useEffect(() => {
+    checkUser();
+  }, []);
 
-    form.reset();
-    setShowProgress(true);
+  useEffect(() => {
+    if (isConnected && account) {
+      setFormData(prev => ({ ...prev, wallet_address: account }));
+      loadBeneficiaryData();
+    }
+  }, [isConnected, account]);
+
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setUser(session?.user || null);
+  };
+
+  const loadBeneficiaryData = async () => {
+    if (!contracts.beneficiaryModule || !account) return;
+    
+    try {
+      const balance = await contracts.beneficiaryModule.charityBalance(account);
+      setCharityBalance(ethers.utils.formatEther(balance));
+      
+      const statsData = await contracts.beneficiaryModule.getStats(account);
+      setStats({
+        dailySpent: ethers.utils.formatEther(statsData.dailySpent),
+        lastSpendTime: statsData.lastSpendTimestamp.toNumber(),
+      });
+    } catch (error) {
+      console.error("加载受助人数据失败:", error);
+    }
+  };
+
+  const handleSpendToken = async (productId: number, quantity: number) => {
+    if (!contracts.beneficiaryModule) {
+      toast.error("请先连接钱包");
+      return;
+    }
+
+    try {
+      const tx = await contracts.beneficiaryModule.spendCharityToken(productId, quantity);
+      await tx.wait();
+      toast.success("核销成功！");
+      loadBeneficiaryData();
+    } catch (error: any) {
+      console.error("核销失败:", error);
+      toast.error(error.message || "核销失败");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error("请先登录");
+      navigate("/auth");
+      return;
+    }
+
+    if (!isConnected || !account) {
+      toast.error("请先连接钱包");
+      return;
+    }
+    
+    // 验证必填字段
+    if (!formData.nickname || !formData.contact_email || !formData.situation || !formData.wallet_address) {
+      toast.error("请填写所有必填字段");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .insert([
+          {
+            applicant_name: formData.nickname,
+            applicant_age: 0,
+            contact_email: formData.contact_email,
+            contact_phone: formData.contact_phone,
+            address: formData.wallet_address,
+            situation: formData.situation,
+            requested_amount: parseFloat(formData.requested_amount) || 0,
+            urgency_level: 'medium',
+            status: 'pending',
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast.success("申请提交成功！我们会尽快审核您的申请");
+      
+      // 重置表单
+      setFormData({
+        nickname: "",
+        contact_email: "",
+        contact_phone: "",
+        wallet_address: account,
+        situation: "",
+        requested_amount: "",
+      });
+    } catch (error: any) {
+      console.error("提交失败:", error);
+      toast.error("提交失败，请稍后重试");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -105,351 +152,191 @@ const Apply = () => {
       
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-6">
-          {/* Back to Home Button */}
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-6 hover:bg-accent"
+            className="mb-8 hover:bg-accent"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             返回主页
           </Button>
 
-          {/* Hero Section */}
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
+              <Heart className="w-10 h-10 text-primary" />
               申请救助
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              我们致力于帮助每一位需要帮助的女性，请如实填写信息，我们会保护您的隐私
+            <p className="text-muted-foreground">
+              填写申请信息，连接钱包地址以接收救助资金和慈善积分
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* Application Form */}
-            <Card className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  申请信息
-                </CardTitle>
-                <CardDescription>请详细填写以下信息以便我们评估</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            姓名
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="请输入您的姓名" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="age"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>年龄</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="请输入年龄" {...field} min="1" max="120" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Phone className="w-4 h-4" />
-                            联系电话
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="请输入手机号码" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <Mail className="w-4 h-4" />
-                            电子邮箱
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="your@email.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            居住地址
-                          </FormLabel>
-                          <FormControl>
-                            <Input placeholder="请输入详细地址" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="urgencyLevel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            紧急程度
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="请选择紧急程度" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="urgent">紧急 - 需要立即救助</SelectItem>
-                              <SelectItem value="high">高 - 一周内需要帮助</SelectItem>
-                              <SelectItem value="medium">中 - 一个月内需要帮助</SelectItem>
-                              <SelectItem value="low">低 - 长期规划</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="requestedAmount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>申请金额 (ETH)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              placeholder="0.00" 
-                              step="0.01" 
-                              min="0"
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            请根据实际需求填写
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="situation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>详细情况说明</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="请详细描述您遇到的困难和需要帮助的具体情况..."
-                              className="min-h-[120px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            至少20个字符，最多2000个字符
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button 
-                      type="submit"
-                      className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-                      size="lg"
-                    >
-                      提交申请
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
+          {!user ? (
+            <Card className="p-8 max-w-3xl mx-auto text-center">
+              <Heart className="w-16 h-16 mx-auto mb-4 text-primary" />
+              <h2 className="text-2xl font-semibold mb-4">请先登录</h2>
+              <p className="text-muted-foreground mb-6">
+                您需要登录账号才能提交救助申请
+              </p>
+              <Button onClick={() => navigate("/auth")} size="lg">
+                前往登录
+              </Button>
             </Card>
-
-            {/* Progress & Impact Section */}
-            <div className="space-y-6">
-              {/* Relief Progress */}
-              <Card className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" />
-                    救济进度
-                  </CardTitle>
-                  <CardDescription>追踪您的申请和救助进度</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {showProgress ? (
-                    <>
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
-                          <div>
-                            <div className="font-medium">申请已提交</div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date().toLocaleString('zh-CN')}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3">
-                          <Clock className="w-5 h-5 text-primary mt-0.5" />
-                          <div>
-                            <div className="font-medium">等待审核</div>
-                            <div className="text-sm text-muted-foreground">
-                              预计48小时内完成
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3 opacity-50">
-                          <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <div className="font-medium">资金分配</div>
-                            <div className="text-sm text-muted-foreground">待审核通过</div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start gap-3 opacity-50">
-                          <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <div className="font-medium">救助实施</div>
-                            <div className="text-sm text-muted-foreground">待资金到位</div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      提交申请后，您可以在这里追踪进度
+          ) : !isConnected ? (
+            <Card className="p-8 max-w-3xl mx-auto text-center">
+              <Wallet className="w-16 h-16 mx-auto mb-4 text-primary" />
+              <h2 className="text-2xl font-semibold mb-4">请连接钱包</h2>
+              <p className="text-muted-foreground mb-6">
+                您需要连接钱包地址以接收救助资金
+              </p>
+              <Button onClick={connectWallet} size="lg">
+                连接钱包
+              </Button>
+            </Card>
+          ) : (
+            <>
+              {parseFloat(charityBalance) > 0 && (
+                <Card className="p-6 max-w-3xl mx-auto mb-6 bg-primary/5 border-primary">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-1">慈善积分余额</h3>
+                      <p className="text-3xl font-bold text-primary">{charityBalance} 积分</p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Funding Details */}
-              <Card className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-primary" />
-                    资金使用详情
-                  </CardTitle>
-                  <CardDescription>透明化的资金分配和使用情况</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-accent/50 rounded-lg">
-                      <span className="text-sm font-medium">总申请金额</span>
-                      <Badge variant="outline">待审核</Badge>
+                    <ShoppingCart className="w-12 h-12 text-primary" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">今日已消费</p>
+                      <p className="font-semibold">{stats.dailySpent} 积分</p>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">已分配资金</span>
-                        <span className="font-semibold">0 ETH</span>
-                      </div>
-                      <Progress value={0} className="h-2" />
+                    <div>
+                      <p className="text-muted-foreground">最后消费时间</p>
+                      <p className="font-semibold">
+                        {stats.lastSpendTime > 0 
+                          ? new Date(stats.lastSpendTime * 1000).toLocaleDateString()
+                          : "暂无"}
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => navigate("/merchant")}
+                    className="w-full mt-4"
+                    variant="outline"
+                  >
+                    前往商户中心核销物资
+                  </Button>
+                </Card>
+              )}
+
+              <Card className="p-8 max-w-3xl mx-auto">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="nickname" className="block text-sm font-medium mb-2">
+                        昵称 *
+                      </label>
+                      <Input
+                        id="nickname"
+                        value={formData.nickname}
+                        onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+                        placeholder="请输入您的昵称"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="contact_email" className="block text-sm font-medium mb-2">
+                        电子邮箱 *
+                      </label>
+                      <Input
+                        id="contact_email"
+                        type="email"
+                        value={formData.contact_email}
+                        onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="contact_phone" className="block text-sm font-medium mb-2">
+                        联系电话
+                      </label>
+                      <Input
+                        id="contact_phone"
+                        value={formData.contact_phone}
+                        onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                        placeholder="请输入您的联系电话"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="wallet_address" className="block text-sm font-medium mb-2">
+                        钱包地址 *
+                      </label>
+                      <Input
+                        id="wallet_address"
+                        value={formData.wallet_address}
+                        readOnly
+                        placeholder="连接钱包后自动填写"
+                        required
+                      />
                     </div>
                   </div>
 
-                  <div className="pt-2 space-y-2">
-                    <div className="text-sm font-medium mb-2">资金用途分类</div>
-                    <div className="space-y-2">
-                      {[
-                        { category: "医疗救助", amount: "-", color: "bg-blue-500" },
-                        { category: "生活补助", amount: "-", color: "bg-green-500" },
-                        { category: "法律援助", amount: "-", color: "bg-purple-500" },
-                        { category: "心理咨询", amount: "-", color: "bg-pink-500" },
-                      ].map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                            <span className="text-sm">{item.category}</span>
-                          </div>
-                          <span className="text-sm font-medium">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div>
+                    <label htmlFor="situation" className="block text-sm font-medium mb-2">
+                      困难情况说明 *
+                    </label>
+                    <Textarea
+                      id="situation"
+                      value={formData.situation}
+                      onChange={(e) => setFormData({ ...formData, situation: e.target.value })}
+                      placeholder="请详细描述您当前面临的困难情况..."
+                      rows={6}
+                      required
+                    />
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Impact & Changes */}
-              <Card className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary" />
-                    带来的改变
-                  </CardTitle>
-                  <CardDescription>记录救助带来的积极影响</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-3 bg-accent/30 rounded-lg">
-                      <Heart className="w-5 h-5 text-primary mt-0.5" />
-                      <div>
-                        <div className="font-medium mb-1">成功案例分享</div>
-                        <p className="text-sm text-muted-foreground">
-                          通过救助，许多受助者重新获得了生活的希望，找到了工作，重建了家庭...
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 border rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary mb-1">856</div>
-                        <div className="text-xs text-muted-foreground">累计受助人数</div>
-                      </div>
-                      <div className="p-3 border rounded-lg text-center">
-                        <div className="text-2xl font-bold text-primary mb-1">94%</div>
-                        <div className="text-xs text-muted-foreground">满意度</div>
-                      </div>
-                    </div>
-
-                    <div className="text-sm text-muted-foreground text-center pt-2">
-                      您的申请通过后，我们会持续跟踪并记录帮助您的每一步
-                    </div>
+                  <div>
+                    <label htmlFor="requested_amount" className="block text-sm font-medium mb-2">
+                      申请金额 (选填)
+                    </label>
+                    <Input
+                      id="requested_amount"
+                      type="number"
+                      step="0.01"
+                      value={formData.requested_amount}
+                      onChange={(e) => setFormData({ ...formData, requested_amount: e.target.value })}
+                      placeholder="请输入申请金额"
+                    />
                   </div>
-                </CardContent>
+
+                  <div className="pt-4">
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        "提交中..."
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5 mr-2" />
+                          提交申请
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground text-center">
+                    * 提交申请后，您将在审核通过后收到慈善积分，可用于核销物资
+                  </p>
+                </form>
               </Card>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </main>
 
