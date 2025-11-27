@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
-import heroImage from "@/assets/cooperation-hero.jpg";
+import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
   return (
@@ -16,7 +16,7 @@ const Hero = () => {
               <span className="text-sm font-medium text-foreground">基于区块链的透明捐助</span>
             </div>
             
-            <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
+            <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
               让每一笔善款
               <span className="bg-gradient-primary bg-clip-text text-transparent"> 安全透明</span>
               地到达需要帮助的女性
@@ -58,11 +58,11 @@ const Hero = () => {
             </div>
           </div>
           
-          <div className="relative animate-fade-in lg:scale-110">
-            <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full animate-pulse" />
+          <div className="relative animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full" />
             <img 
               src={heroImage} 
-              alt="Two women in equal partnership and mutual support"
+              alt="Women empowerment and safety"
               className="relative rounded-3xl shadow-soft w-full animate-float"
             />
           </div>
