@@ -2,10 +2,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
-
 const Hero = () => {
-  return (
-    <section className="relative min-h-screen flex items-center bg-gradient-hero overflow-hidden">
+  return <section className="relative min-h-screen flex items-center bg-gradient-hero overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
       
       <div className="container mx-auto px-6 py-20 relative z-10">
@@ -34,10 +32,7 @@ const Hero = () => {
                 </Button>
               </Link>
 
-              <Button size="lg" 
-                variant="outline" 
-                className="border-2"
-                onClick={() => window.open('https://github.com/Jasmine-Stars/frontend-genie', '_blank')}>
+              <Button size="lg" variant="outline" className="border-2" onClick={() => window.open('https://github.com/Jasmine-Stars/frontend-genie', '_blank')}>
                 了解更多
               </Button>
             </div>
@@ -60,16 +55,10 @@ const Hero = () => {
           
           <div className="relative animate-fade-in">
             <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full" />
-            <img 
-              src={heroImage} 
-              alt="Women empowerment and safety"
-              className="relative rounded-3xl shadow-soft w-full animate-float"
-            />
+            <img alt="Women empowerment and safety" className="relative rounded-3xl shadow-soft w-full animate-float" src="/lovable-uploads/a90818ff-3ccd-411b-b252-6e39c29750c9.png" />
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
