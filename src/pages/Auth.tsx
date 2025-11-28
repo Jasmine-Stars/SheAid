@@ -56,6 +56,19 @@ const Auth = () => {
   }, [navigate]);
 
   const handleMetaMaskConnect = async () => {
+    // 检查是否填写了邮箱和密码
+    const email = form.getValues("email");
+    const password = form.getValues("password");
+
+    if (!email || !password) {
+      toast({
+        title: "请先填写登录信息",
+        description: "使用MetaMask登录前，请先输入邮箱和密码",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!window.ethereum) {
       toast({
         title: "未检测到MetaMask",
@@ -67,18 +80,63 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
+      // 1. 连接MetaMask获取钱包地址
       const accounts = await window.ethereum.request({ 
         method: 'eth_requestAccounts' 
       });
       
-      if (accounts.length > 0) {
-        toast({
-          title: "连接成功",
-          description: `已连接钱包 ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
-        });
-        // TODO: Implement Web3 authentication flow
+      if (accounts.length === 0) {
+        throw new Error("未获取到钱包地址");
       }
+
+      const walletAddress = accounts[0].toLowerCase();
+
+      toast({
+        title: "钱包连接成功",
+        description: `地址: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
+      });
+
+      // 2. 使用邮箱密码登录
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        toast({
+          title: "登录失败",
+          description: signInError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!authData.user) {
+        throw new Error("登录成功但未获取到用户信息");
+      }
+
+      // 3. 更新或绑定钱包地址到用户资料
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ wallet_address: walletAddress })
+        .eq("id", authData.user.id);
+
+      if (updateError) {
+        console.error("更新钱包地址失败:", updateError);
+        toast({
+          title: "警告",
+          description: "钱包地址绑定失败，但登录成功",
+        });
+      } else {
+        toast({
+          title: "登录成功",
+          description: "欢迎回来！钱包已绑定",
+        });
+      }
+
+      // 登录成功后会自动触发 onAuthStateChange，重定向到首页
     } catch (error: any) {
+      console.error("MetaMask登录错误:", error);
       toast({
         title: "连接失败",
         description: error.message || "无法连接MetaMask",
