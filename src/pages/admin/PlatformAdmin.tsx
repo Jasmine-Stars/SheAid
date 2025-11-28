@@ -416,16 +416,30 @@ const PlatformAdmin = () => {
                           <CardTitle>{app.applicant_name}</CardTitle>
                           <CardDescription>{app.contact_email}</CardDescription>
                         </div>
-                        <Badge>已通过</Badge>
+                        <Badge className="bg-green-500">已通过</Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">
-                        审核时间: {app.reviewed_at ? new Date(app.reviewed_at).toLocaleString() : "-"}
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-sm"><strong>钱包地址:</strong> {app.address}</p>
+                        <p className="text-sm"><strong>申请金额:</strong> {app.requested_amount} 代币</p>
+                        <p className="text-sm"><strong>困难情况:</strong></p>
+                        <p className="text-sm text-muted-foreground">{app.situation}</p>
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground">
+                            申请时间: {new Date(app.created_at).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            审核时间: {app.reviewed_at ? new Date(app.reviewed_at).toLocaleString() : "-"}
+                          </p>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
+                {approvedApplications.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">暂无已通过的申请</p>
+                )}
               </TabsContent>
 
               <TabsContent value="rejected" className="space-y-4 mt-4">
@@ -440,8 +454,27 @@ const PlatformAdmin = () => {
                         <Badge variant="destructive">已拒绝</Badge>
                       </div>
                     </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm"><strong>钱包地址:</strong> {app.address}</p>
+                        <p className="text-sm"><strong>申请金额:</strong> {app.requested_amount} 代币</p>
+                        <p className="text-sm"><strong>困难情况:</strong></p>
+                        <p className="text-sm text-muted-foreground">{app.situation}</p>
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground">
+                            申请时间: {new Date(app.created_at).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            拒绝时间: {app.reviewed_at ? new Date(app.reviewed_at).toLocaleString() : "-"}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
                   </Card>
                 ))}
+                {rejectedApplications.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">暂无已拒绝的申请</p>
+                )}
               </TabsContent>
             </Tabs>
           </TabsContent>
