@@ -6,7 +6,10 @@ import Features from "@/components/Features";
 import Impact from "@/components/Impact";
 import Footer from "@/components/Footer";
 import ProjectCard from "@/components/ProjectCard";
-import { Loader2 } from "lucide-react";
+import { Loader2, Bell } from "lucide-react";
+import { useContractEvents } from "@/hooks/useContractEvents";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface Project {
   id: string;
@@ -25,6 +28,7 @@ interface Project {
 const Index = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const { events } = useContractEvents();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -75,6 +79,42 @@ const Index = () => {
       <Header />
       <main className="pt-16">
         <Hero />
+        
+        {/* Real-time Events Section */}
+        {events.length > 0 && (
+          <section className="py-12 bg-background">
+            <div className="container mx-auto px-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-primary" />
+                    实时链上事件
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {events.slice(-5).reverse().map((event, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
+                        <div className="flex-1">
+                          <Badge variant="outline" className="mb-1">
+                            {event.type}
+                          </Badge>
+                          <p className="text-sm text-muted-foreground">
+                            {JSON.stringify(event.data).slice(0, 100)}...
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(event.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
+        
         <Features />
         
         {/* Projects Section */}
