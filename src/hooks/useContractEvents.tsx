@@ -9,9 +9,68 @@ export const useContractEvents = () => {
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!provider || !contracts.marketplace) return;
+    if (!provider) return;
 
     const setupEventListeners = () => {
+      // 监听项目捐款事件
+      contracts.projectVaultManager?.on(
+        "ProjectDonationReceived",
+        (projectId, donor, amount, event) => {
+          console.log("ProjectDonationReceived:", { projectId, donor, amount });
+          setEvents(prev => [...prev, {
+            type: "ProjectDonationReceived",
+            data: { 
+              projectId: projectId.toString(), 
+              donor, 
+              amount: ethers.utils.formatEther(amount),
+              blockNumber: event.blockNumber,
+              transactionHash: event.transactionHash,
+            },
+            timestamp: Date.now()
+          }]);
+        }
+      );
+
+      // 监听资金分配事件
+      contracts.projectVaultManager?.on(
+        "ProjectFundsAllocatedToBeneficiary",
+        (projectId, beneficiary, amount, event) => {
+          console.log("ProjectFundsAllocatedToBeneficiary:", { projectId, beneficiary, amount });
+          setEvents(prev => [...prev, {
+            type: "ProjectFundsAllocatedToBeneficiary",
+            data: { 
+              projectId: projectId.toString(), 
+              beneficiary, 
+              amount: ethers.utils.formatEther(amount),
+              blockNumber: event.blockNumber,
+              transactionHash: event.transactionHash,
+            },
+            timestamp: Date.now()
+          }]);
+        }
+      );
+
+      // 监听项目创建事件
+      contracts.projectVaultManager?.on(
+        "ProjectCreated",
+        (projectId, ngo, title, budget, deposit, event) => {
+          console.log("ProjectCreated:", { projectId, ngo, title, budget, deposit });
+          setEvents(prev => [...prev, {
+            type: "ProjectCreated",
+            data: { 
+              projectId: projectId.toString(), 
+              ngo, 
+              title, 
+              budget: ethers.utils.formatEther(budget),
+              deposit: ethers.utils.formatEther(deposit),
+              blockNumber: event.blockNumber,
+              transactionHash: event.transactionHash,
+            },
+            timestamp: Date.now()
+          }]);
+        }
+      );
+
       // 监听商品上架事件
       contracts.marketplace?.on(
         "ProductListed",
@@ -138,6 +197,7 @@ export const useContractEvents = () => {
 
     return () => {
       // 清除所有监听器
+      contracts.projectVaultManager?.removeAllListeners();
       contracts.marketplace?.removeAllListeners();
       contracts.merchantRegistry?.removeAllListeners();
       contracts.beneficiaryModule?.removeAllListeners();
