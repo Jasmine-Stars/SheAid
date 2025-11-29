@@ -104,9 +104,17 @@ const Auth = () => {
 
       const walletAddress = accounts[0].toLowerCase();
 
+      // toast({
+      //   title: "钱包连接成功",
+      //   description: `地址: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
+      // });
+
+      // ★★★ 新增：安全检查，防止误操作 ★★★
+      // 如果你想确保只能是这个 jasmin 账号绑定的特定地址，可以在这里加判断
+      // 或者在 toast 里明确告诉用户连接的是哪个地址
       toast({
-        title: "钱包连接成功",
-        description: `地址: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`,
+        title: "钱包已选择",
+        description: `正在绑定地址: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}，请确保这是您的管理员钱包！`,
       });
 
       // 2. 使用邮箱密码登录
