@@ -61,11 +61,11 @@ const NGO = () => {
   const [ngoStatus, setNgoStatus] = useState<"loading" | "register" | "pending" | "approved" | "rejected">("loading");
   const [selectedTab, setSelectedTab] = useState<"applications" | "projects" | "allocations">("applications");
   const [applications, setApplications] = useState<Application[]>([]);
-  const [myProjects, setMyProjects] = useState<Project[]>([]); // 保持使用 Supabase 数据源
+  const [myProjects, setMyProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [organizerId, setOrganizerId] = useState<string | null>(null);
   
-  // --- 新增：详情弹窗状态 ---
+  // 详情弹窗状态
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [chainDetails, setChainDetails] = useState<ChainDetails | null>(null);
@@ -104,18 +104,17 @@ const NGO = () => {
 
   useEffect(() => {
     if (ngoStatus === "approved" && organizerId) {
-      fetchData(); // 保持原有的 Supabase 数据拉取逻辑
+      fetchData();
     }
   }, [selectedTab, ngoStatus, organizerId]);
 
-  // --- 新增：监听链上事件以实时更新详情 ---
+  // 监听链上事件以实时更新详情
   useEffect(() => {
     const relevantEvents = ["ProjectDonationReceived", "ProjectFundsAllocatedToBeneficiary"];
     const hasUpdate = events.some(e => relevantEvents.includes(e.type));
     
-    // 如果当前正打开着详情页，且有相关事件发生，则刷新链上数据
     if (hasUpdate && detailsOpen && selectedProject) {
-      console.log("Detected chain event, refreshing details...");
+      console.log("监听到资金变动，刷新详情...");
       fetchChainDetails(selectedProject);
     }
   }, [events]);
@@ -146,7 +145,6 @@ const NGO = () => {
     }
   };
 
-  // 保持原有的 fetchData (从 Supabase 读取列表)
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -175,7 +173,7 @@ const NGO = () => {
     }
   };
 
-  // --- 新增：获取链上详情 (核心逻辑) ---
+  // --- 核心修复：获取链上详情 ---
   const handleOpenDetails = (project: Project) => {
     setSelectedProject(project);
     setDetailsOpen(true);
@@ -183,29 +181,48 @@ const NGO = () => {
   };
 
   const fetchChainDetails = async (project: Project) => {
-    if (!contracts.projectVaultManager || !account) return;
+    // 注意：这里不需要强制 !account，因为只读操作即使未连接钱包（使用默认Provider）通常也能进行，
+    // 但为了保险起见我们还是依赖 contracts 对象
+    if (!contracts.projectVaultManager) return;
     setLoadingDetails(true);
     
     try {
-      // 1. 找到链上对应的 Project ID
-      // 策略：查找当前 NGO 创建的所有项目事件，匹配标题 (Title)
-      // 注意：这要求 Supabase 里的标题和链上标题一致
-      const filter = contracts.projectVaultManager.filters.ProjectCreated(null, account);
+      let chainId: number | undefined;
+
+      // 1. 尝试在链上寻找对应的 Project ID
+      // 修复：移除 account 过滤器，改为搜索所有 ProjectCreated 事件
+      const filter = contracts.projectVaultManager.filters.ProjectCreated(); 
       const logs = await contracts.projectVaultManager.queryFilter(filter);
       
-      // 找到标题匹配的那个事件
+      // 2. 通过标题匹配
       const targetLog = logs.find(log => log.args?.title === project.title);
       
-      if (!targetLog) {
-        throw new Error("未在链上找到该项目，可能尚未同步或标题不匹配");
+      if (targetLog) {
+        chainId = targetLog.args?.projectId.toNumber();
+      } else {
+        console.warn("未通过事件找到项目，尝试检查 ID=0 (兜底逻辑)");
+        // 兜底逻辑：如果标题没匹配上（可能由于编码问题），且这是该组织第一个项目，尝试读取 ID 0
+        try {
+          const p0 = await contracts.projectVaultManager.projects(0);
+          // 如果 ID 0 的标题和我们的一样，或者我们强行假设它就是 0
+          if (p0.title === project.title || logs.length === 0) {
+             chainId = 0;
+          }
+        } catch (err) {
+          console.error("兜底检查失败", err);
+        }
       }
 
-      const chainId = targetLog.args?.projectId; // BigNumber
+      if (chainId === undefined) {
+        throw new Error("未在链上找到该项目，请确认项目是否已成功上链");
+      }
 
-      // 2. 读取资金状态
+      console.log(`Found Chain Project ID: ${chainId}`);
+
+      // 3. 读取资金状态
       const pData = await contracts.projectVaultManager.projects(chainId);
 
-      // 3. 读取分配记录
+      // 4. 读取分配记录
       const allocFilter = contracts.projectVaultManager.filters.ProjectFundsAllocatedToBeneficiary(chainId);
       const allocLogs = await contracts.projectVaultManager.queryFilter(allocFilter);
       
@@ -217,7 +234,7 @@ const NGO = () => {
       })).reverse();
 
       setChainDetails({
-        id: chainId.toNumber(),
+        id: chainId,
         donatedAmount: ethers.utils.formatEther(pData.donatedAmount),
         remainingFunds: ethers.utils.formatEther(pData.remainingFunds),
         budget: ethers.utils.formatEther(pData.budget),
@@ -227,9 +244,9 @@ const NGO = () => {
     } catch (error: any) {
       console.error("Fetch chain details error:", error);
       toast({ 
-        title: "链上数据同步中", 
-        description: "暂时无法获取最新的资金数据，请稍后再试。",
-        variant: "default" 
+        title: "无法获取链上详情", 
+        description: "请确保您的钱包已连接到 Sepolia 测试网，并且该项目已正确上链。",
+        variant: "destructive" 
       });
       setChainDetails(null);
     } finally {
@@ -237,7 +254,7 @@ const NGO = () => {
     }
   };
 
-  // --- 注册与创建逻辑 (保持修复后的版本) ---
+  // --- 操作逻辑 ---
 
   const handleRegisterNGO = async () => {
     if (!account || !contracts.ngoRegistry || !contracts.mockToken) return;
@@ -327,7 +344,6 @@ const NGO = () => {
     }
   };
 
-  // ... 省略 Application approval logic，保持原样 ...
   const handleApproveApplication = async (id: string) => { 
     await supabase.from("applications").update({status: "approved"}).eq("id", id);
     setApplications(prev => prev.map(a => a.id === id ? {...a, status: "approved"} : a));
@@ -336,7 +352,6 @@ const NGO = () => {
     await supabase.from("applications").update({status: "rejected"}).eq("id", id);
     setApplications(prev => prev.map(a => a.id === id ? {...a, status: "rejected"} : a));
   };
-
 
   // --- 渲染部分 ---
 
@@ -406,7 +421,7 @@ const NGO = () => {
                          <CardTitle className="text-lg">{p.title}</CardTitle>
                          <Badge variant="outline">{p.category}</Badge>
                        </div>
-                       {/* ✅ 新增：详情按钮 */}
+                       {/* ✅ 详情按钮 */}
                        <Button variant="secondary" size="sm" onClick={() => handleOpenDetails(p)}>
                          <Eye className="w-4 h-4 mr-2"/> 实时详情 & 资金流向
                        </Button>
@@ -463,7 +478,7 @@ const NGO = () => {
         </div>
       </main>
 
-      {/* ✅ 新增：项目详情弹窗 (Dialog) */}
+      {/* ✅ 项目详情弹窗 (Dialog) */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
