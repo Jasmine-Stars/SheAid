@@ -40,54 +40,7 @@ const Header = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // 监听钱包连接状态，如果是管理员钱包地址则显示管理员入口
-  useEffect(() => {
-    if (account?.toLowerCase() === "0x4473cd3f7ee51b9f6e3d3ed135325c3418470481".toLowerCase()) {
-      setIsAdmin(true);
-    } else if (!user) {
-      // 如果没有登录用户且钱包不是管理员地址，则重置管理员状态
-      setIsAdmin(false);
-    }
-  }, [account, user]);
-
   const checkAdminRole = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("email, wallet_address")
-      .eq("id", userId)
-      .single();
-
-    // 如果是 Jasmine@521.com，确保有 admin 角色
-    if (profile?.email === "Jasmine@521.com") {
-      // 检查是否已有 admin 角色
-      const { data: existingRole } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .single();
-
-      // 如果没有，创建 admin 角色
-      if (!existingRole) {
-        await supabase.from("user_roles").insert({
-          user_id: userId,
-          role: "admin",
-        });
-      }
-
-      // 绑定钱包地址（如果还没绑定）
-      if (!profile.wallet_address) {
-        await supabase
-          .from("profiles")
-          .update({ wallet_address: "0x4473cd3f7ee51b9f6e3d3ed135325c3418470481" })
-          .eq("id", userId);
-      }
-
-      setIsAdmin(true);
-      return;
-    }
-
-    // 其他用户正常检查角色
     const { data } = await supabase
       .from("user_roles")
       .select("role")
