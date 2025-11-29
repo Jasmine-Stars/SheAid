@@ -150,7 +150,7 @@ const Donate = () => {
 
       // 2. 调用 donateToProject
       const donateTx = await contracts.projectVaultManager.donateToProject(
-        projectIndex, // 假设链上项目ID从1开始
+        projectIndex + 1, // 假设链上项目ID从1开始
         amountInWei
       );
       
