@@ -175,6 +175,12 @@ const ReviewOrganizers = () => {
         description: `${organizer.organization_name} 已成为认证发起人`,
       });
 
+      // 关键修复：直接更新本地状态，而不是仅依赖重新获取
+      setOrganizers(prev => prev.map(item => 
+        item.id === organizer.id ? { ...item, status: "approved" } : item
+      ));
+
+      // 也可以后台静默刷新以确保一致性
       fetchOrganizers();
     } catch (error: any) {
       console.error("Error approving:", error);
@@ -219,6 +225,11 @@ const ReviewOrganizers = () => {
         title: "已拒绝申请",
         description: `已拒绝 ${selectedOrganizer.organization_name} 的申请`,
       });
+
+      // 关键修复：直接更新本地状态
+      setOrganizers(prev => prev.map(item => 
+        item.id === selectedOrganizer.id ? { ...item, status: "rejected", rejection_reason: rejectionReason } : item
+      ));
 
       setShowRejectDialog(false);
       setRejectionReason("");
@@ -268,6 +279,11 @@ const ReviewOrganizers = () => {
         description: `${auditor.full_name} 已成为认证审计员`,
       });
 
+      // 关键修复：直接更新本地状态
+      setAuditors(prev => prev.map(item => 
+        item.id === auditor.id ? { ...item, status: "approved" } : item
+      ));
+
       fetchAuditors();
     } catch (error: any) {
       console.error("Error approving:", error);
@@ -312,6 +328,11 @@ const ReviewOrganizers = () => {
         title: "已拒绝申请",
         description: `已拒绝 ${selectedAuditor.full_name} 的申请`,
       });
+
+      // 关键修复：直接更新本地状态
+      setAuditors(prev => prev.map(item => 
+        item.id === selectedAuditor.id ? { ...item, status: "rejected", rejection_reason: rejectionReason } : item
+      ));
 
       setShowAuditorRejectDialog(false);
       setRejectionReason("");
