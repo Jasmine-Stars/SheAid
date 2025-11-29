@@ -469,3 +469,82 @@ const NGO = () => {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>项目详情: {selectedProject?.title}</DialogTitle>
+            <DialogDescription>链上 ID: {selectedProject?.id}</DialogDescription>
+          </DialogHeader>
+          
+          {selectedProject && (
+            <div className="space-y-6">
+              {/* 资金概览 */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-100 text-center">
+                  <div className="text-xs text-muted-foreground">已募集</div>
+                  <div className="text-xl font-bold text-green-700">{selectedProject.donatedAmount} ETH</div>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 text-center">
+                  <div className="text-xs text-muted-foreground">剩余可用</div>
+                  <div className="text-xl font-bold text-blue-700">{selectedProject.remainingFunds} ETH</div>
+                </div>
+                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100 text-center">
+                  <div className="text-xs text-muted-foreground">项目押金</div>
+                  <div className="text-xl font-bold text-yellow-700">{selectedProject.deposit} ETH</div>
+                </div>
+              </div>
+
+              {/* 进度条 */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm font-medium">
+                  <span>资金募集进度</span>
+                  <span>{((parseFloat(selectedProject.donatedAmount) / parseFloat(selectedProject.budget)) * 100).toFixed(1)}%</span>
+                </div>
+                <Progress value={(parseFloat(selectedProject.donatedAmount) / parseFloat(selectedProject.budget)) * 100} className="h-3" />
+              </div>
+
+              {/* 资金分配记录表 */}
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-5 h-5 text-primary"/> 资金流向记录 (受助人分配)
+                </h3>
+                <div className="border rounded-md max-h-[300px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>受助人地址</TableHead>
+                        <TableHead>分配金额</TableHead>
+                        <TableHead>时间</TableHead>
+                        <TableHead>交易哈希</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loadingDetails ? (
+                        <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="animate-spin mx-auto"/></TableCell></TableRow>
+                      ) : allocations.length === 0 ? (
+                        <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">暂无资金分配记录</TableCell></TableRow>
+                      ) : (
+                        allocations.map((record, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-mono text-xs">{record.beneficiary.slice(0, 10)}...</TableCell>
+                            <TableCell className="font-bold text-green-600">+{record.amount}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{record.timestamp}</TableCell>
+                            <TableCell>
+                              <a href={`https://sepolia.etherscan.io/tx/${record.txHash}`} target="_blank" rel="noreferrer" className="text-blue-500 underline text-xs">
+                                查看
+                              </a>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default NGO;
