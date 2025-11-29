@@ -41,6 +41,29 @@ const Header = () => {
   }, []);
 
   const checkAdminRole = async (userId: string) => {
+    // 获取用户邮箱
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // 特定管理员邮箱自动获得权限
+    if (user?.email === "Jasmine@521.com") {
+      setIsAdmin(true);
+      
+      // 自动添加admin角色（如果不存在）
+      const { data: existingRoles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin");
+      
+      if (!existingRoles || existingRoles.length === 0) {
+        await supabase
+          .from("user_roles")
+          .insert({ user_id: userId, role: "admin" });
+      }
+      return;
+    }
+    
+    // 其他用户检查角色
     const { data } = await supabase
       .from("user_roles")
       .select("role")
