@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Heart, Menu, LogOut, User, Shield } from "lucide-react";
+import { Heart, Menu, LogOut, User, Shield, Wallet } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useWeb3 } from "@/hooks/useWeb3";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { account, connectWallet, disconnectWallet, isConnected } = useWeb3();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -114,6 +116,29 @@ const Header = () => {
           </nav>
           
           <div className="flex items-center gap-4">
+            {/* Wallet Connect Button */}
+            {isConnected ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={disconnectWallet}
+                className="hidden md:inline-flex"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "已连接"}
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={connectWallet}
+                className="hidden md:inline-flex"
+              >
+                <Wallet className="w-4 h-4 mr-2" />
+                连接钱包
+              </Button>
+            )}
+
             {isAdmin && (
               <Link to="/admin/platform">
                 <Button variant="default" size="sm" className="hidden md:inline-flex">
@@ -179,6 +204,19 @@ const Header = () => {
             <Link to="/fund-flow" className="text-foreground hover:text-primary transition-colors font-medium">
               资金追踪
             </Link>
+            {/* Mobile Wallet Connect */}
+            {isConnected ? (
+              <button onClick={disconnectWallet} className="text-left text-foreground hover:text-primary transition-colors font-medium">
+                <Wallet className="w-4 h-4 inline mr-2" />
+                {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "已连接"}
+              </button>
+            ) : (
+              <button onClick={connectWallet} className="text-left text-foreground hover:text-primary transition-colors font-medium">
+                <Wallet className="w-4 h-4 inline mr-2" />
+                连接钱包
+              </button>
+            )}
+            
             {isAdmin && (
               <Link to="/admin/platform" className="text-foreground hover:text-primary transition-colors font-medium">
                 <Shield className="w-4 h-4 inline mr-2" />

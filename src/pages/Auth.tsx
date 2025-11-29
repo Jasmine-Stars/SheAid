@@ -115,24 +115,11 @@ const Auth = () => {
         throw new Error("登录成功但未获取到用户信息");
       }
 
-      // 3. 更新或绑定钱包地址到用户资料
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ wallet_address: walletAddress })
-        .eq("id", authData.user.id);
-
-      if (updateError) {
-        console.error("更新钱包地址失败:", updateError);
-        toast({
-          title: "警告",
-          description: "钱包地址绑定失败，但登录成功",
-        });
-      } else {
-        toast({
-          title: "登录成功",
-          description: "欢迎回来！钱包已绑定",
-        });
-      }
+      // 3. 登录成功，不自动更新钱包地址（避免覆盖现有绑定）
+      toast({
+        title: "登录成功",
+        description: "欢迎回来！钱包已连接",
+      });
 
       // 登录成功后会自动触发 onAuthStateChange，重定向到首页
     } catch (error: any) {
