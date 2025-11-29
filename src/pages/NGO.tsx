@@ -297,31 +297,97 @@ const NGO = () => {
 
   // --- 渲染逻辑 ---
 
+// ... (前面的代码保持不变)
+
+  // --- 恢复：注册视图 (Register View) ---
   const renderRegisterView = () => (
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Building2 className="w-6 h-6 text-primary" /> 注册 NGO</CardTitle>
-          <CardDescription>发起项目需先验证资质并缴纳押金。</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-primary" />
+            注册成为 NGO 机构
+          </CardTitle>
+          <CardDescription>
+            在 SheAid 平台上发起慈善项目，需要先验证机构资质并缴纳押金。
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {!account ? (
-            <Button onClick={connectWallet} className="w-full h-12"><Wallet className="mr-2"/> 连接钱包</Button>
+            <Button onClick={connectWallet} className="w-full h-12">
+              <Wallet className="w-4 h-4 mr-2" /> 连接钱包以注册
+            </Button>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <Input placeholder="机构名称" value={regForm.name} onChange={e => setRegForm({...regForm, name: e.target.value})} />
-                <Select onValueChange={v => setRegForm({...regForm, type: v})}>
-                  <SelectTrigger><SelectValue placeholder="类型" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Education">教育</SelectItem><SelectItem value="Medical">医疗</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label>机构名称 *</Label>
+                  <Input 
+                    placeholder="输入机构全称" 
+                    value={regForm.name} 
+                    onChange={e => setRegForm({...regForm, name: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>机构类型</Label>
+                  <Select onValueChange={v => setRegForm({...regForm, type: v})}>
+                    <SelectTrigger><SelectValue placeholder="选择类型" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Education">教育基金会</SelectItem>
+                      <SelectItem value="Medical">医疗援助组织</SelectItem>
+                      <SelectItem value="Environmental">环保组织</SelectItem>
+                      <SelectItem value="Community">社区服务</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <Input placeholder="执照编号" value={regForm.licenseId} onChange={e => setRegForm({...regForm, licenseId: e.target.value})} />
-              <Input type="number" placeholder="押金 (MockToken)" value={regForm.stakeAmount} onChange={e => setRegForm({...regForm, stakeAmount: e.target.value})} />
-              <Button className="w-full" onClick={handleRegisterNGO} disabled={loading}>
-                {loading ? <Loader2 className="animate-spin"/> : "提交申请"}
+              
+              <div className="space-y-2">
+                <Label>执照/注册编号 (License ID) *</Label>
+                <Input 
+                  placeholder="输入政府颁发的注册编号" 
+                  value={regForm.licenseId}
+                  onChange={e => setRegForm({...regForm, licenseId: e.target.value})}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>联系邮箱</Label>
+                  <Input type="email" placeholder="contact@ngo.org" value={regForm.email} onChange={e => setRegForm({...regForm, email: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>联系电话</Label>
+                  <Input placeholder="+86 ..." value={regForm.phone} onChange={e => setRegForm({...regForm, phone: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>机构简介</Label>
+                <Textarea 
+                  placeholder="请简要描述机构的宗旨和过往项目..." 
+                  value={regForm.description}
+                  onChange={e => setRegForm({...regForm, description: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>质押押金 (MockToken) *</Label>
+                <Input 
+                  type="number" 
+                  value={regForm.stakeAmount}
+                  onChange={e => setRegForm({...regForm, stakeAmount: e.target.value})}
+                />
+                <p className="text-xs text-muted-foreground">押金将在您退出平台时退还，用于保障行为规范。</p>
+              </div>
+
+              <Button 
+                className="w-full bg-gradient-primary mt-4 h-12 text-lg" 
+                onClick={handleRegisterNGO} 
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
+                {loading ? "处理中..." : "提交注册申请"}
               </Button>
             </>
           )}
@@ -329,6 +395,8 @@ const NGO = () => {
       </Card>
     </div>
   );
+
+  // ... (后面的代码保持不变)
 
   const renderDashboard = () => (
     <>
@@ -452,23 +520,70 @@ const NGO = () => {
     </>
   );
 
-  return (
+//   return (
+//     <div className="min-h-screen bg-background">
+//       <Header />
+//       <main className="pt-32 pb-20 px-6">
+//         <div className="container mx-auto">
+//           {ngoStatus !== "approved" && (
+//             <Button variant="ghost" onClick={() => navigate("/")} className="mb-6"><ArrowLeft className="mr-2"/> 返回</Button>
+//           )}
+//           {ngoStatus === "register" && renderRegisterView()}
+//           {ngoStatus === "pending" && <Card className="py-12 text-center"><CardContent>您的申请正在审核中...</CardContent></Card>}
+//           {ngoStatus === "rejected" && <Card className="py-12 text-center"><CardContent>申请被拒绝</CardContent></Card>}
+//           {ngoStatus === "approved" && renderDashboard()}
+//         </div>
+//       </main>
+//       <Footer />
+//     </div>
+//   );
+// };
+
+return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-32 pb-20 px-6">
         <div className="container mx-auto">
+          {/* 只有非 Approved 状态才显示返回按钮，避免 Dashboard 里也有返回按钮显得奇怪 */}
           {ngoStatus !== "approved" && (
-            <Button variant="ghost" onClick={() => navigate("/")} className="mb-6"><ArrowLeft className="mr-2"/> 返回</Button>
+            <Button variant="ghost" onClick={() => navigate("/")} className="mb-6 hover:bg-accent">
+              <ArrowLeft className="w-4 h-4 mr-2" /> 返回主页
+            </Button>
           )}
+
+          {/* 状态路由：根据 ngoStatus 决定显示哪个子组件 */}
           {ngoStatus === "register" && renderRegisterView()}
-          {ngoStatus === "pending" && <Card className="py-12 text-center"><CardContent>您的申请正在审核中...</CardContent></Card>}
-          {ngoStatus === "rejected" && <Card className="py-12 text-center"><CardContent>申请被拒绝</CardContent></Card>}
+          
+          {ngoStatus === "pending" && (
+            <Card className="max-w-lg mx-auto text-center py-12 mt-8">
+              <CardContent>
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 bg-yellow-100 rounded-full">
+                    <Loader2 className="w-12 h-12 text-yellow-600 animate-spin-slow" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold mb-2">审核中</h2>
+                <p className="text-muted-foreground">您的 NGO 注册申请已提交，正在等待平台管理员审核。</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {ngoStatus === "rejected" && (
+            <Card className="max-w-lg mx-auto text-center py-12 mt-8">
+               <CardContent>
+                <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">申请被拒绝</h2>
+                <p className="text-muted-foreground mb-6">很抱歉，您的 NGO 认证申请未通过审核。</p>
+                <Button onClick={() => setNgoStatus("register")}>重新提交申请</Button>
+              </CardContent>
+            </Card>
+          )}
+
           {ngoStatus === "approved" && renderDashboard()}
         </div>
       </main>
-      <Footer />
+      {/* ... Dialog 和 Footer ... */}
     </div>
   );
-};
 
 export default NGO;
