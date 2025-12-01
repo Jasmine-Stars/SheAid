@@ -9,7 +9,8 @@
 > 
 > 用代码约束权力，用加密保护尊严，让善意有迹可循。
 
-[PPT展示](https://ppt-previewer-pro.lovable.app)
+[这里是 PPT 展示](https://ppt-previewer-pro.lovable.app)
+[这里是 SheAid 网站](https://frontend-genie.lovable.app)
 
 ## 📖 项目简介 (Introduction)
 
