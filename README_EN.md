@@ -8,7 +8,9 @@
 > 
 > Using code to constrain power, encryption to protect dignity, and making goodwill traceable.
 
-[This is a PPT](https://ppt-previewer-pro.lovable.app/).I use "lovable" to generate the PPT website, and I have no credits to  modify to English version.... If you want to understand it, you can use a browser translation plugin to translate it yourself.
+[Here is a PPT](https://ppt-previewer-pro.lovable.app/).I use "lovable" to generate the PPT website, and I have no credits to  modify to English version.... If you want to understand it, you can use a browser translation plugin to translate it yourself.
+
+[Here is SheAid website](https://frontend-genie.lovable.app)
 
 ## 📖 Introduction
 
