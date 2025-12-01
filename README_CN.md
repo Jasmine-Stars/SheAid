@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Tech Stack](https://img.shields.io/badge/Tech-Solidity%20%7C%20React%20%7C%20Supabase-blue)](https://github.com/Jasmine-Stars/frontend-genie)
 [![Network](https://img.shields.io/badge/Network-Sepolia%20Testnet-green)]()
+[PPT展示](https://ppt-previewer-pro.lovable.app)
 
 > **"Code is Law, Tech for Good."**
 > 
