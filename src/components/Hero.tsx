@@ -55,7 +55,7 @@ const Hero = () => {
           
           <div className="relative animate-fade-in">
             <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full" />
-            <img alt="Women empowerment and safety" className="relative rounded-3xl shadow-soft w-full animate-float" src="/lovable-uploads/15e7491e-1f0e-40a5-beca-fa644b7304c5.png" />
+            <img alt="Women empowerment and safety" className="relative rounded-3xl shadow-soft w-full animate-float" src="/images/15e7491e-1f0e-40a5-beca-fa644b7304c5.png" />
           </div>
         </div>
       </div>

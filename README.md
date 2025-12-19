@@ -1,73 +1,33 @@
-# Welcome to your Lovable project
+# SheAid - 女性安全捐助链
 
-## Project info
+这是一个基于区块链的透明公益平台，利用 Web3 技术构建去信任捐助链。
 
-**URL**: https://lovable.dev/projects/7ad30175-930e-4600-a1d8-5b7577fc8602
 
-## How can I edit this code?
 
-There are several ways of editing your application.
+### 前置要求
 
-**Use Lovable**
+* Node.js & npm (建议使用最新 LTS 版本)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7ad30175-930e-4600-a1d8-5b7577fc8602) and start prompting.
+### 安装与运行
 
-Changes made via Lovable will be committed automatically to this repo.
+1. 克隆项目到本地：
+   ```bash
+   git clone <你的新仓库地址>
+   cd SheAid-experiment-migrationToLocal
+    ```
+2. 安装依赖：
+   ```bash
+   npm install
+    ```
 
-**Use your preferred IDE**
+3. 配置环境变量： 在根目录创建 .env 文件（参考 .env.example 或直接从 Supabase 获取），填入：
+    ```bash
+    VITE_SUPABASE_URL=你的Supabase项目URL
+    VITE_SUPABASE_PUBLISHABLE_KEY=你的Supabase公钥
+    ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+4. 启动开发服务器：
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/7ad30175-930e-4600-a1d8-5b7577fc8602) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+    ```Bash
+    npm run dev
+    ```
